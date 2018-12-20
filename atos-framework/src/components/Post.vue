@@ -19,8 +19,7 @@
                    <td scope="row">{{ post.title }}</td>
                    <td>{{ post.body }}</td>
                    <td class="text-right">
-                       <button class="btn btn-warning"></button>
-                       <button class="btn btn-danger"></button>
+                       <router-link :to="{name: 'post', params: {id: post.id}}">Show</router-link>
                    </td>
                </tr>
          
