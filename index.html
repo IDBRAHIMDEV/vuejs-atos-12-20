@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <script src="assets/js/vuejs.js"></script>
+
+</head>
+<body>
+
+    <div class="container" id="app">
+        <div class="row">
+            <div class="col-md-12">
+                 <h1>{{ message }}</h1>
+                    <p>{{ content }}</p>
+
+                    <div class="form-group">
+                         <label for="title">Title</label>
+                         <input id="title" class="form-control" type="text" v-model="myCourse.title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <input id="price" class="form-control" type="text" v-model="myCourse.price">
+                    </div>
+
+                    <button @click="addNewCourse" class="btn btn-primary btn-block" v-if="!editableCourse">Add</button>
+                    <button @click="updateCourse" class="btn btn-warning btn-block" v-else>Update</button>
+                   
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Vote</th>
+                                <th>Title</th>
+                                <th class="text-right">Price</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="course in courses">
+                                <td>
+                                   L: {{ course.vote.like }} D: {{ course.vote.dislike }}
+                                    <app-vote 
+                                        :like="course.vote.like" 
+                                        :dis-like="course.vote.dislike"
+                                        @set-like-in-parent="setLikeParent(course, $event)"
+                                        @set-dislike-in-parent="setDisLikeParent(course, $event)"
+                                        >
+                                    </app-vote>
+                                </td>
+                              
+                                <td>{{ course.title }}</td>
+                                <td class="text-right">{{ course.price }} &dollar;</td>
+                                <td class="text-right">
+                                   <button class="btn btn-warning btn-sm" @click="editCourse(course)">
+                                       <i class="fa fa-pencil"></i>
+                                    </button>
+                                   <button class="btn btn-danger btn-sm">
+                                       <i class="fa fa-trash"></i>
+                                   </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-right"> <strong>{{ sumPrice }} &dollar;</strong> </td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                     
+                     <hr>
+                    <a :href="link">Lien vers mon Site : elearn dev</a>
+                    <hr>
+                    <div class="alert alert-warning" v-if="!courses.length">
+                        Pas de cours !!
+                    </div>
+
+                    <div class="alert alert-success" v-else>
+                        il y a {{ courses.length }} cours
+                    </div>
+            </div>
+        </div>
+
+    </div>
+
+    
+   
+    <script>
+        
+        Vue.component('app-vote', {
+            props: ['like', 'disLike'],
+            data: function() {
+                        return {
+                                  message: 'je suis le component',
+                                  voteLike: this.like,
+                                  voteDislike: this.disLike
+                               }
+            },
+            methods: {
+               setLike() {
+                   this.voteLike++;
+                   this.$emit('set-like-in-parent', this.voteLike);
+               },
+               setDisLike() {
+                   this.voteDislike++;
+                   this.$emit('set-dislike-in-parent', this.voteDislike);
+               }
+            },
+            template: `<div>
+                            <button @click="setLike()" class="btn btn-success"><i class="fa fa-thumbs-up"></i> {{ voteLike }} </button>
+                            <button @click="setDisLike()" class="btn btn-warning"><i class="fa fa-thumbs-down"></i> {{ voteDislike }}</button>
+                       </div>`
+        })
+
+        new Vue({
+            el: '#app',
+            data: {
+               message: "Formation pour Atos",
+               content: "lrem ipsum content",
+               myCourse: {id: 0, title: '', price: 0, vote: {like: 0, dislike: 0}}, 
+               oldCourse: {id: 0, title: '', price: 0, vote: {like: 0, dislike: 0}},
+               title: '',
+               courses: [
+                   {id: 1, title: 'Laravel', price: 100, vote: {like: 7, dislike: 0}},
+                   {id: 2, title: 'Java EE', price: 120, vote: {like: 3, dislike: 8}},
+                   {id: 3, title: 'Symfony', price: 160, vote: {like: 0, dislike: 0}},
+                   {id: 4, title: 'Angular', price: 220, vote: {like: 10, dislike: 13}},
+               ],
+              
+               editableCourse: false,
+               link: "https://www.google.fr/"
+            },
+            computed: {
+                sumPrice: function() {
+                    return this.courses.reduce((total, course) => total + parseFloat(course.price), 0);
+                }
+            },
+            methods: {
+                addNewCourse: function() {
+                    if(this.myCourse.title == '') {
+                        alert('this field is required');
+                    }else{
+                        this.courses.unshift(this.myCourse);
+                        this.myCourse = '';
+                    }
+                    
+                },
+                getTitle: function() {
+                    this.title = 'My name is : '+this.myName
+                    //return this.title;
+                },
+                getResult: function() {
+                    return this.title;
+                },
+                deleteCourse: function(index) {
+                    this.courses.splice(index, 1);
+                },
+                editCourse(course) {
+                    this.myCourse = this.oldCourse = course;
+                    this.editableCourse = true;
+                },
+                updateCourse: function() {
+                    
+                    this.myCourse = {id: 0, title: '', price: 0};
+                    this.editableCourse = false;
+                },
+                totalPrice: function() {
+                    return this.courses.reduce((total, course) => total + course.price, 0);
+                },
+                setLikeParent: function(course, event){
+                    course.vote.like = event;
+                    console.log('like in parent: ', event)
+
+                },
+                setDisLikeParent(course, event) {
+                    course.vote.dislike = event;
+                    console.log('dislike in parent: ', event)
+                }
+            }
+        })
+    </script>
+</body>
+</html>
